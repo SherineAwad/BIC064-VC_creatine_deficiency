@@ -46,7 +46,7 @@ Sample-90_S10_L004.sam: galore/Sample-90_S10_L001_R1_001.trimmed.fastq.gz
 
 
 Sample-90_S10.sam: Sample-90_S10_L004.sam
-	 $(foreach i, $(PATIENTS), samtools merge -f $(i).bowtie2.sam $(i)_L*.bowtie2.sam ;) 
+	 $(foreach i, $(SAMPLES), samtools merge -f $(i).bowtie2.sam $(i)_L*.bowtie2.sam ;) 
 
 Sample-90_S10.RG.bowtie2.sam:  Sample-90_S10.sam
 	picard AddOrReplaceReadGroups I=${S1}.bowtie2.sam O=${S1}.RG.bowtie2.sam SO=coordinate \
@@ -81,23 +81,32 @@ Sample-90_S10.RG.bowtie2.sam:  Sample-90_S10.sam
 	
 
 Sample-90_S10.dedupped.bam: Sample-90_S10.RG.bowtie2.sam
-	 $(foreach i, $(PATIENTS),  picard MarkDuplicates I=$(i).RG.bowtie2.sam O=$(i).dedupped.bam CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT M=$(i).output.metrics;)  
+	 $(foreach i, $(SAMPLES),  picard MarkDuplicates I=$(i).RG.bowtie2.sam O=$(i).dedupped.bam CREATE_INDEX=true VALIDATION_STRINGENCY=SILENT M=$(i).output.metrics;)  
 
 Sample-90_S10.recal.table: Sample-90_S10.dedupped.bam
-	 $(foreach i, $(PATIENTS), gatk BaseRecalibrator  -I $(i).dedupped.bam -R ${hg38FASTA}/genome.fa --known-sites ${GATKRESOURCES}/Homo_sapiens_assembly38.dbsnp138.vcf --known-sites ${GATKRESOURCES}/Homo_sapiens_assembly38.known_indels.vcf --known-sites ${GATKRESOURCES}/Mills_and_1000G_gold_standard.indels.hg38.vcf  -O $(i).recal_data.table;) 
+	 $(foreach i, $(SAMPLES), gatk BaseRecalibrator  -I $(i).dedupped.bam -R ${hg38FASTA}/genome.fa --known-sites ${GATKRESOURCES}/Homo_sapiens_assembly38.dbsnp138.vcf --known-sites ${GATKRESOURCES}/Homo_sapiens_assembly38.known_indels.vcf --known-sites ${GATKRESOURCES}/Mills_and_1000G_gold_standard.indels.hg38.vcf  -O $(i).recal_data.table;) 
 
 
 Sample-90_S10.recalibrated.bam: Sample-90_S10.recal.table 
-	 $(foreach i, $(PATIENTS), gatk ApplyBQSR -I $(i).dedupped.bam -R ${hg38FASTA}/genome.fa --bqsr-recal-file $(i).recal_data.table -O $(i).recalibrated.bam;)
+	 $(foreach i, $(SAMPLES), gatk ApplyBQSR -I $(i).dedupped.bam -R ${hg38FASTA}/genome.fa --bqsr-recal-file $(i).recal_data.table -O $(i).recalibrated.bam;)
 
 
 Sample-90_S10.vcf:  Sample-90_S10.recalibrated.bam
-	$(foreach i, $(PATIENTS), gatk --java-options "-Xmx4g" HaplotypeCaller  -R  ${hg38FASTA}/genome.fa -I $(i).recalibrated.bam -O $(i).vcf -bamout $(i).bamout.bam;)
+	$(foreach i, $(SAMPLES), gatk --java-options "-Xmx4g" HaplotypeCaller  -R  ${hg38FASTA}/genome.fa -I $(i).recalibrated.bam -O $(i).vcf -bamout $(i).bamout.bam;)
 
-NNM-80_S4.GATK.hg38_multianno.txt: Sample-90_S10.vcf  
-	$(foreach i, $(PATIENTS), ${ANNOVAR}/table_annovar.pl $(i).vcf.gz  ${ANNOVAR}/humandb/ -buildver hg38 -out $(i).GATK.hg38 -remove -protocol refGene,ensGene,cytoBand,exac03,gnomad_exome,avsnp147,dbnsfp33a,clinvar_20170130,revel,regsnpintron,dbscsnv11 -operation g,g,f,f,f,f,f,f,f,f,f -nastring . -vcfinput;)
+Sample-90_S10.GATK.hg38_multianno.txt: Sample-90_S10.vcf  
+	$(foreach i, $(SAMPLES), ${ANNOVAR}/table_annovar.pl $(i).vcf.gz  ${ANNOVAR}/humandb/ -buildver hg38 -out $(i).GATK.hg38 -remove -protocol refGene,ensGene,cytoBand,exac03,gnomad_exome,avsnp147,dbnsfp33a,clinvar_20170130,revel,regsnpintron,dbscsnv11 -operation g,g,f,f,f,f,f,f,f,f,f -nastring . -vcfinput;)
 
+human.hg38.excl.tsv:
+	wget https://raw.githubusercontent.com/dellytools/delly/master/excludeTemplates/human.hg38.excl.tsv
 
+Sample-90_S10.delly.vcf: Sample-90_S10.vcf human.hg38.excl.tsv 
+	$(foreach i, $(SAMPLES), delly call -x human.hg38.excl.tsv  -o $(i).delly.bcf -g ${hg38FASTA}/genome.fa $(i).recalibrated.bam;)
+	$(foreach i, $(SAMPLES), bcftools view $(i).delly.bcf > $(i).delly.vcf;)
+
+Sample-90_S10.delly.annotated.tsv2: Sample-90_S10.delly.vcf 
+	$(foreach i, $(SAMPLES), $$ANNOTSV/bin/AnnotSV -SVinputFile ./$(i).delly.vcf -outputFile ./$(i).delly.annotated.tsv -genomeBuild GRCh38;)
+	$ANNOTSV/bin/AnnotSV -SVinputFile ./Sample-90_S10.delly.vcf -outputFile ./Sample-90_S10.delly.annotated.tsv -genomeBuild GRCh38
 
 clean: 
 	rm *L00*.sam 
