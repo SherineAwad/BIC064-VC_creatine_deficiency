@@ -76,7 +76,6 @@ Sample-90_S10.delly.vcf: Sample-90_S10.vcf human.hg38.excl.tsv
 
 Sample-90_S10.delly.annotated.tsv2: Sample-90_S10.delly.vcf 
 	$(foreach i, $(SAMPLES), $$ANNOTSV/bin/AnnotSV -SVinputFile ./$(i).delly.vcf -outputFile ./$(i).delly.annotated.tsv -genomeBuild GRCh38;)
-	$ANNOTSV/bin/AnnotSV -SVinputFile ./Sample-90_S10.delly.vcf -outputFile ./Sample-90_S10.delly.annotated.tsv -genomeBuild GRCh38
 
 clean: 
 	rm *L00*.sam 
