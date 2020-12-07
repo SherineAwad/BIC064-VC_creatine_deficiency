@@ -1,15 +1,12 @@
 hg38GTF = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations/Homo_sapiens/NCBI/GRCh38/Annotation/Genes
 hg38FASTA = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations/Homo_sapiens/NCBI/GRCh38/Sequence/WholeGenomeFasta
 ANNOTATIONS = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations
-
 WHERE =/rds/project/yhbl2/rds-yhbl2-genehunter/SM/Naira2
 hg38BOWTIE2INDEX = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations/Homo_sapiens/NCBI/GRCh38/Sequence/Bowtie2Index
 GATKRESOURCES = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations/hg38gatk
 
 ANNOVAR = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/tools/annovar
 
-hg19Fasta = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations/Homo_sapiens/NCBI/build37.2/Sequence/WholeGenomeFasta
-hg19Bowtie2Index = /rds/project/yhbl2/rds-yhbl2-genehunter/SM/annotations/Homo_sapiens/NCBI/build37.2/Sequence/Bowtie2Index
 
 
 
@@ -28,7 +25,7 @@ S10 = Sample-90_S10
 SAMPLES = ${S1} ${S2} ${S3} ${S4} ${S5} ${S6} ${S7} ${S8} ${S9} ${S10}
 R_ID = @NDX550116_59_H7N52BGXG
 
-galore/Sample-90_S10_L001_R1_001.trimmed.fastq.gz: 
+galore/Sample-90_S10_L001_R1_001.trimmed.fastq.gz: Sample-90_S10.fastq.gz  
 	$(foreach i,$(SAMPLES), trim_galore --gzip --retain_unpaired --trim1 --fastqc --fastqc_args "--outdir ${WHERE}/fastqc" -o ${WHERE}/galore --paired ${WHERE}/$(i)_L001_R1_001.fastq.gz ${WHERE}/$(i)_L001_R2_001.fastq.gz; ) 
 	$(foreach i,$(SAMPLES), trim_galore --gzip --retain_unpaired --trim1 --fastqc --fastqc_args "--outdir ${WHERE}/fastqc" -o ${WHERE}/galore --paired ${WHERE}/$(i)_L002_R1_001.fastq.gz ${WHERE}/$(i)_L002_R2_001.fastq.gz; ) 
 	$(foreach i,$(SAMPLES), trim_galore --gzip --retain_unpaired --trim1 --fastqc --fastqc_args "--outdir ${WHERE}/fastqc" -o ${WHERE}/galore --paired ${WHERE}/$(i)_L003_R1_001.fastq.gz ${WHERE}/$(i)_L003_R2_001.fastq.gz; )
