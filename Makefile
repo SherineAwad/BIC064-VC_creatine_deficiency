@@ -67,7 +67,7 @@ Sample-90_S10.GATK.hg38_multianno.txt: Sample-90_S10.vcf
 human.hg38.excl.tsv:
 	wget https://raw.githubusercontent.com/dellytools/delly/master/excludeTemplates/human.hg38.excl.tsv
 
-Sample-90_S10.delly.vcf: Sample-90_S10.vcf human.hg38.excl.tsv 
+Sample-90_S10.delly.vcf: Sample-90_S10.recalibrated.bam human.hg38.excl.tsv 
 	$(foreach i, $(SAMPLES), delly call -x human.hg38.excl.tsv  -o $(i).delly.bcf -g ${hg38FASTA}/genome.fa $(i).recalibrated.bam;)
 	$(foreach i, $(SAMPLES), bcftools view $(i).delly.bcf > $(i).delly.vcf;)
 
