@@ -32,14 +32,11 @@ galore/Sample-90_S10_L001_R1_001.trimmed.fastq.gz: Sample-90_S10.fastq.gz
 	$(foreach i,$(SAMPLES), trim_galore --gzip --retain_unpaired --trim1 --fastqc --fastqc_args "--outdir ${WHERE}/fastqc" -o ${WHERE}/galore --paired ${WHERE}/$(i)_L004_R1_001.fastq.gz ${WHERE}/$(i)_L004_R2_001.fastq.gz; )
 
 
-
-
 Sample-90_S10_L004.sam: galore/Sample-90_S10_L001_R1_001.trimmed.fastq.gz 
 	$(foreach i, $(SAMPLES),  bowtie2 -x ${hg38BOWTIE2INDEX}/genome -1 galore/$(i)_L001_R1_001_val_1.fq.gz -2 galore/$(i)_L001_R2_001_val_2.fq.gz -S $(i)_L001.bowtie2.sam;)
 	$(foreach i, $(SAMPLES),  bowtie2 -x ${hg38BOWTIE2INDEX}/genome -1 galore/$(i)_L002_R1_001_val_1.fq.gz -2 galore/$(i)_L002_R2_001_val_2.fq.gz -S $(i)_L002.bowtie2.sam;)
 	$(foreach i, $(SAMPLES),  bowtie2 -x ${hg38BOWTIE2INDEX}/genome -1 galore/$(i)_L003_R1_001_val_1.fq.gz -2 galore/$(i)_L003_R2_001_val_2.fq.gz -S $(i)_L003.bowtie2.sam;)
 	$(foreach i, $(SAMPLES),  bowtie2 -x ${hg38BOWTIE2INDEX}/genome -1 galore/$(i)_L004_R1_001_val_1.fq.gz -2 galore/$(i)_L004_R2_001_val_2.fq.gz -S $(i)_L004.bowtie2.sam;)
-
 
 Sample-90_S10.sam: Sample-90_S10_L004.sam
 	 $(foreach i, $(SAMPLES), samtools merge -f $(i).bowtie2.sam $(i)_L*.bowtie2.sam ;) 
